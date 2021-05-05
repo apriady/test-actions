@@ -66,17 +66,22 @@ jobs:
           target_url: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
         env:
           GITHUB_TOKEN: ${{ github.token }}
-      
-      - name: Merge pull request
-        if: ${{ success() }}
-        uses: "pascalgn/automerge-action@v0.13.1"
-        env:
-          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
-          MERGE_LABELS: ""
-      
+        
       - name: Create Pull Request to Develop
+        if: ${{ success() }}
+        id: open-pr
         uses: repo-sync/pull-request@v2
         with:
           destination_branch: "main"
           github_token: ${{ secrets.GITHUB_TOKEN }}
           pr_assignee: "${{ github.event.client_payload.github.actor }}"
+      
+      - name: Notify Actor
+        if: ${{ success() }}
+        uses: peter-evans/create-or-update-comment@v1
+        with:
+          issue-number: ${{ github.event.client_payload.pull_request.number }}
+          body: |
+            @${{ github.event.client_payload.github.actor }} The release has been deployed to production.
+            You can merge this pull request safely and please merge PR below if all check pass.
+            ${{steps.open-pr.outputs.pr_url}}
