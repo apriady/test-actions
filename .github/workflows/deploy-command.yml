@@ -67,23 +67,15 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
       
-      - name: Sleep for 120 seconds
-        if: ${{ success() }}
-        uses: jakejarvis/wait-action@master
-        with:
-          time: '30s'
-      
       - name: Merge pull request
-        if: ${{ (success() && (github.event.client_payload.pull_request.mergeable_state == 'clean' || github.event.client_payload.pull_request.mergeable_state == 'has_hooks')) }}
-        uses: actions/github-script@v2
+        if: ${{ success() }}
+        uses: "pascalgn/automerge-action@v0.13.1"
+        env:
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+      
+      - name: Create Pull Request to Develop
+        uses: repo-sync/pull-request@v2
         with:
-          script: |
-            const pull_request = context.payload.client_payload.pull_request
-            const repository = context.repo
-            await github.pulls.merge({
-              owner: repository.owner,
-              repo: repository.repo,
-              pull_number: pull_request.number,
-              merge_method: "squash",
-              commit_title: `${pull_request.title} (${pull_request.number})\n`,
-            })
+          destination_branch: "main"
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          pr_assignee: "${{ github.event.client_payload.github.actor }}"
