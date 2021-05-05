@@ -4,20 +4,14 @@ on:
     types: [deploy-command]
 jobs:
   deploy-test:
-    # if: ${{ (github.event.client_payload.slash_command.args.unnamed.arg1 == 'test' && contains(github.event.client_payload.pull_request.base.ref, 'release')) }}
+    if: ${{ (github.event.client_payload.slash_command.args.unnamed.arg1 == 'test' && contains(github.event.client_payload.pull_request.head.ref, 'release')) }}
     runs-on: ubuntu-latest
     steps:
       - name: GH Context
         env:
           GITHUB_CONTEXT: ${{ toJSON(github.event.client_payload) }}
         run: echo "$GITHUB_CONTEXT"
-          
-      - name: Debug
-        run: |
-          ${{ github.event.client_payload.slash_command.args.unnamed.arg1 == 'test' }}
-          ${{ contains(github.event.client_payload.pull_request.base.ref, 'release') }}
-          ${{ (github.event.client_payload.slash_command.args.unnamed.arg1 == 'test' && contains(github.event.client_payload.pull_request.base.ref, 'release')) }}
-          
+      
       - name: Set PR Status Pending
         uses: niteoweb/pull_request_status_action@v1.0.0
         with:
