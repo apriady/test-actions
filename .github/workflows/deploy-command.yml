@@ -72,6 +72,7 @@ jobs:
         uses: "pascalgn/automerge-action@v0.13.1"
         env:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+          MERGE_LABELS: ""
       
       - name: Create Pull Request to Develop
         uses: repo-sync/pull-request@v2
