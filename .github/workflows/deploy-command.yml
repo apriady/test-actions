@@ -66,24 +66,22 @@ jobs:
           target_url: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
         env:
           GITHUB_TOKEN: ${{ github.token }}
-      
-      - name: Sleep for 120 seconds
+        
+      - name: Create Pull Request to Develop
         if: ${{ success() }}
-        uses: jakejarvis/wait-action@master
+        id: open-pr
+        uses: repo-sync/pull-request@v2
         with:
-          time: '30s'
+          destination_branch: "develop"
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          pr_assignee: "${{ github.event.client_payload.github.actor }}"
       
-      - name: Merge pull request
-        if: ${{ (success() && (github.event.client_payload.pull_request.mergeable_state == 'clean' || github.event.client_payload.pull_request.mergeable_state == 'has_hooks')) }}
-        uses: actions/github-script@v2
+      - name: Notify Actor
+        if: ${{ success() }}
+        uses: peter-evans/create-or-update-comment@v1
         with:
-          script: |
-            const pull_request = context.payload.client_payload.pull_request
-            const repository = context.repo
-            await github.pulls.merge({
-              owner: repository.owner,
-              repo: repository.repo,
-              pull_number: pull_request.number,
-              merge_method: "squash",
-              commit_title: `${pull_request.title} (${pull_request.number})\n`,
-            })
+          issue-number: ${{ github.event.client_payload.pull_request.number }}
+          body: |
+            @${{ github.event.client_payload.github.actor }} The release has been deployed to production.
+            You can merge this pull request safely and please merge PR below if all check pass.
+            ${{steps.open-pr.outputs.pr_url}}
