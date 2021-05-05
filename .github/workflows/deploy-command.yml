@@ -72,7 +72,7 @@ jobs:
         id: open-pr
         uses: repo-sync/pull-request@v2
         with:
-          destination_branch: "main"
+          destination_branch: "develop"
           github_token: ${{ secrets.GITHUB_TOKEN }}
           pr_assignee: "${{ github.event.client_payload.github.actor }}"
       
