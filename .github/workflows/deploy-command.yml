@@ -33,11 +33,6 @@ jobs:
           echo ${{ (github.event.client_payload.pull_request.mergeable_state == 'clean' || github.event.client_payload.pull_request.mergeable_state == 'has_hooks') }}
           echo "PKG_VERSION="$(node -p "require('./package.json').version.match(/^(\d+\.)?(\d+\.)?(\*|\d+)/g)[0]") >> $GITHUB_ENV
 
-      - name: Sleep for 120 seconds
-        uses: jakejarvis/wait-action@master
-        with:
-          time: '120s'
-
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
@@ -71,6 +66,12 @@ jobs:
           target_url: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
         env:
           GITHUB_TOKEN: ${{ github.token }}
+      
+      - name: Sleep for 120 seconds
+        if: ${{ success() }}
+        uses: jakejarvis/wait-action@master
+        with:
+          time: '30s'
       
       - name: Merge pull request
         if: ${{ (success() && (github.event.client_payload.pull_request.mergeable_state == 'clean' || github.event.client_payload.pull_request.mergeable_state == 'has_hooks')) }}
